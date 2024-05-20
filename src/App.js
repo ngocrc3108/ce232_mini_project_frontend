@@ -1,30 +1,8 @@
 import { LineChart } from '@mui/x-charts/LineChart';
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
-const data = {
-  times : [
-    new Date("2024-05-12T07:03"),
-    new Date("2024-05-12T08:03"),
-    new Date("2024-05-12T09:03"),
-    new Date("2024-05-12T10:03"),
-    new Date("2024-05-12T11:03"),
-    new Date("2024-05-12T12:03"),
-    new Date("2024-05-12T13:03"),
-    new Date("2024-05-12T14:03"),
-    new Date("2024-05-12T15:03"),
-    new Date("2024-05-12T16:03"),
-    new Date("2024-05-12T16:20"),
-    new Date("2024-05-12T16:38"),
-    new Date("2024-05-12T17:06"),
-    new Date("2024-05-12T17:08"),
-    new Date("2024-05-12T17:23"),
-    new Date("2024-05-12T17:58"),
-    new Date("2024-05-12T18:15"),
-    new Date("2024-05-12T18:27"),
-    new Date("2024-05-12T18:30"),
-    new Date("2024-05-12T18:43"),
-],
-  values : [30.1, 32.6, 28.9, 26.4, 33.7, 38.2, 34.5, 31.8, 27.6, 35.0, 30.1, 32.6, 28.9, 26.4, 33.7, 38.2, 34.5, 31.8, 27.6, 35.0],
-}
+const socket = io();
 
 const dateFormatter = (dateObj) => {
   // Get month (0-indexed) and day as zero-padded strings
@@ -36,22 +14,49 @@ const dateFormatter = (dateObj) => {
 }
 
 function App() {
+  const [temps, setTemps] = useState([]);
+  const [times, setTimes] = useState([]);
+
+  useEffect(() => {
+    socket.on("initialize", (data) => {
+      console.log(data);
+      data = data.sort((a, b) => b.createdAt - a.createdAt)
+      setTemps(data.map((element) => element.temperature));
+      setTimes(data.map((element) => new Date(element.createdAt)));
+    });
+
+    socket.on("data", (data) => {
+      console.log(data);
+      setTemps((pre) => [...pre, data.temperature]);
+      setTimes((pre) => [...pre, new Date(data.createdAt)]);
+    });
+
+  }, []);
+
   return (
     <div>
       <LineChart
         xAxis={[{
-          data: data.times,
+          data: times,
+          min: times[0],
+          max: times[times.length-1],
           scaleType: 'time',
-          valueFormatter: dateFormatter
+          valueFormatter: dateFormatter,
+        }]}
+        yAxis={[{
+          min: 30,
+          max: 40
         }]}
         series={[
           {
-            data: data.values,
+            data: temps,
             label: "temperature",
+            showMark: false,
+            curve: "natural"
           },
         ]}
-        width={800}
-        height={500}
+        width={600}
+        height={700}
       />
     </div>
   );
