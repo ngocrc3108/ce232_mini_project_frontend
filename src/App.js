@@ -18,15 +18,32 @@ const dateFormatter = (dateObj) => {
 
 function App() {
   const [dataSet, setDataSet] = useState([]);
+  const [minTemp, setMinTemp] = useState();
+  const [maxTemp, setMaxTemp] = useState();
+  const [minHumi, setMinHumi] = useState();
+  const [maxHumi, setMaxHumi] = useState();
 
   useEffect(() => {
     socket.on("initialize", (data) => {
       data = data.map((e) => {return {...e, time: new Date(e.time)}});
+      setMinTemp(Math.min(...data.map(e => e.temperature)));
+      setMaxTemp(Math.max(...data.map(e => e.temperature)));
+      setMinHumi(Math.min(...data.map(e => e.humidity)));
+      setMaxHumi(Math.max(...data.map(e => e.humidity)));
       setDataSet(data);
     });
 
     socket.on("data", (data) => {
       console.log(data);
+      console.log(typeof data.temperature)
+      if(data.temperature < minTemp)
+        setMinTemp(data.temperature);
+      if(data.temperature > maxTemp)
+        setMaxTemp(data.temperature);
+      if(data.humidity < minHumi)
+        setMinHumi(data.humidity);
+      if(data.humidity > maxHumi)
+        setMaxHumi(data.humidity);
       setDataSet((pre) => [...pre, {...data, time: new Date(data.time)}]);
     });
 
@@ -45,15 +62,15 @@ function App() {
             valueFormatter: dateFormatter,
           }]}
           yAxis={[{
-            min: 30,
-            max: 40
+            min: minTemp - 0.5,
+            max: maxTemp + 0.5,
           }]}
           series={[
             {
               dataKey: 'temperature',
               label: "temperature",
               showMark: false,
-              curve: "natural",
+              curve: "catmullRom",
               area: true,
             },
           ]}
@@ -70,15 +87,15 @@ function App() {
             valueFormatter: dateFormatter,
           }]}
           yAxis={[{
-            // min: 30,
-            // max: 40
+            min: minHumi - 10,
+            max: maxHumi + 10,
           }]}
           series={[
             {
               dataKey: 'humidity',
               label: "humidity",
               showMark: false,
-              curve: "natural",
+              curve: "catmullRom",
               area: true,
               color: 'lightblue',
             },
