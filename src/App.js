@@ -21,13 +21,13 @@ function App() {
 
   useEffect(() => {
     socket.on("initialize", (data) => {
-      data = data.map((e) => {return {...e, createdAt: new Date(e.createdAt)}});
+      data = data.map((e) => {return {...e, time: new Date(e.time)}});
       setDataSet(data);
     });
 
     socket.on("data", (data) => {
       console.log(data);
-      setDataSet((pre) => [...pre, {...data, createdAt: new Date(data.createdAt)}]);
+      setDataSet((pre) => [...pre, {...data, time: new Date(data.time)}]);
     });
 
   }, []);
@@ -38,9 +38,9 @@ function App() {
         <LineChart
           dataset={dataSet}
           xAxis={[{
-            dataKey: 'createdAt',
-            min: dataSet[0]?.createdAt,
-            max: dataSet[dataSet.length-1]?.createdAt,
+            dataKey: 'time',
+            min: dataSet[0]?.time,
+            max: dataSet[dataSet.length-1]?.time,
             scaleType: 'time',
             valueFormatter: dateFormatter,
           }]}
@@ -63,9 +63,9 @@ function App() {
         <LineChart
           dataset={dataSet}
           xAxis={[{
-            dataKey: 'createdAt',
-            min: dataSet[0]?.createdAt,
-            max: dataSet[dataSet.length-1]?.createdAt,
+            dataKey: 'time',
+            min: dataSet[0]?.time,
+            max: dataSet[dataSet.length-1]?.time,
             scaleType: 'time',
             valueFormatter: dateFormatter,
           }]}
