@@ -22,7 +22,24 @@ function App() {
   useEffect(() => {
     socket.on("initialize", (data) => {
       data = data.map((e) => {return {...e, time: new Date(e.time)}});
-      setDataSet(data);
+      const step = parseInt(data.length / 70) || 1;
+      console.log(step);
+      var newData = [];
+      for(var i = 0; i < data.length; i = i + step) {
+        let accTemp = 0;
+        let acchumi = 0;
+        let accTime = 0;
+        var j = i;
+        for(; j < data.length && j < i + step; j++) {
+          const accStep = data.length - i < step ? data.length - i : step;
+          accTemp += data[j].temperature / accStep;
+          acchumi += data[j].humidity / accStep;
+          accTime += data[j].time.valueOf() / accStep;
+        }
+        newData.push({temperature: accTemp, humidity: acchumi, time: new Date(accTime)});
+      }
+      console.log(newData);
+      setDataSet(newData);
     });
 
     socket.on("data", (data) => {
@@ -45,15 +62,15 @@ function App() {
             valueFormatter: dateFormatter,
           }]}
           yAxis={[{
-            min: 30,
-            max: 40
-          }]}
+            min: 32,
+            max: 35,
+            }]}
           series={[
             {
               dataKey: 'temperature',
               label: "temperature",
               showMark: false,
-              curve: "natural",
+              curve: "catmullRom",
               area: true,
             },
           ]}
@@ -78,7 +95,7 @@ function App() {
               dataKey: 'humidity',
               label: "humidity",
               showMark: false,
-              curve: "natural",
+              curve: "catmullRom",
               area: true,
               color: 'lightblue',
             },
