@@ -30,7 +30,24 @@ function App() {
       setMaxTemp(Math.max(...data.map(e => e.temperature)));
       setMinHumi(Math.min(...data.map(e => e.humidity)));
       setMaxHumi(Math.max(...data.map(e => e.humidity)));
-      setDataSet(data);
+      const step = parseInt(data.length / 70) || 1;
+      console.log(step);
+      var newData = [];
+      for(var i = 0; i < data.length; i = i + step) {
+        let accTemp = 0;
+        let acchumi = 0;
+        let accTime = 0;
+        var j = i;
+        for(; j < data.length && j < i + step; j++) {
+          const accStep = data.length - i < step ? data.length - i : step;
+          accTemp += data[j].temperature / accStep;
+          acchumi += data[j].humidity / accStep;
+          accTime += data[j].time.valueOf() / accStep;
+        }
+        newData.push({temperature: accTemp, humidity: acchumi, time: new Date(accTime)});
+      }
+      console.log(newData);
+      setDataSet(newData);
     });
 
     socket.on("data", (data) => {
