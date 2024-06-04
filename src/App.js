@@ -30,7 +30,7 @@ function App() {
       setMaxTemp(Math.max(...data.map(e => e.temperature)));
       setMinHumi(Math.min(...data.map(e => e.humidity)));
       setMaxHumi(Math.max(...data.map(e => e.humidity)));
-      const step = parseInt(data.length / 70) || 1;
+      const step = parseInt(data.length / 20) || 1;
       console.log(step);
       var newData = [];
       for(var i = 0; i < data.length; i = i + step) {
